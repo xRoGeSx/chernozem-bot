@@ -18,9 +18,6 @@
     "utf8": "^3.0.0",
     "xml2js": "^0.4.19"
   },
-  "engines": {
-    "yarn": "YARN NO LONGER USED - use npm instead."
-  },
   "scripts": {
     "start": "node index.js"
   }
