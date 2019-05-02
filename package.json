@@ -1,0 +1,21 @@
+{
+  "name": "chernozem",
+  "version": "1.0.0",
+  "description": "chat bot",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "encodeurl": "^1.0.2",
+    "firebase": "^5.10.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.0",
+    "https": "^1.0.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "now": "^15.0.8",
+    "open-graph-scraper": "^3.6.1",
+    "request": "^2.88.0",
+    "utf8": "^3.0.0",
+    "xml2js": "^0.4.19"
+  }
+}
