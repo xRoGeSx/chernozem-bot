@@ -21,10 +21,7 @@ function translate(sentance, lang, callback, bot, msg)
 function editWiki(word, bot, msg)
 {
 let wikiAPI ='https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintr&redirects=&titles=';
-if(word.split(" ").length > 1)
-wikiAPI+=word.split(" ")[1];
-else
-{ wikiAPI+=word; }
+wikiAPI+=word.split(' ').join('_');
 console.log(wikiAPI);
 axios.get(wikiAPI)
 .then(response => {
@@ -35,6 +32,7 @@ if(extract.slice(0,100).includes("may refer to:"))
 {
 	//console.log("Disambiguation!")
 	let categories = extract.split("\n").filter( el => el.includes('==') );
+//	console.log(categories);
 	let dialoge = {
 	 reply_markup: JSON.stringify({
 	  inline_keyboard: categories.map((x, xi) => ([{
@@ -47,15 +45,30 @@ if(extract.slice(0,100).includes("may refer to:"))
 	extract.forEach((s,index) => {
 	extract[index] = s.split(',')[0];
 });
+ 	//console.log(extract);
 	extract = extract.filter( el =>  el.includes(' '));
-indexes = [];
+	indexes = [];
+	extract.forEach( (s, index) => {
+	let start = s.indexOf('('),
+	    end = s.indexOf(')');
+	if(start && end)
+	{
+	var hasNumber = /\d/;
+	if(hasNumber.test(s.slice(start,end)))
+	extract[index] = s.slice(0,start);
+}
+});
+
+}
+});
+// count indexes
+//console.log(extract);
 	extract.forEach((s, index) => {
-	if(s == categories[indexes.length])
+	if(s.includes('=='))
 	 indexes.push(index);
 });
-	extract.forEach((s, index) => { extract[index] = s.split(' ').join('_');})
-	//console.log(indexes);
-	//console.log(extract);
+
+	extract.forEach((s, index) => { extract[index] = s.split(' ').join('_');});
 	bot.sendMessage(msg.chat.id, 'choose da button', dialoge);
 }
 else
@@ -82,6 +95,7 @@ console.log(error);
 
 function createPoll(id, bot, mid)
 {
+//console.log(indexes);
  let start = indexes[id];
  id++;
  let end = indexes[id];

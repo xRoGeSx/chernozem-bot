@@ -6,7 +6,7 @@ const utf8 = require('utf8');
 const encodeUrl = require('encodeurl');
 const echo = require('./functions/echo').echo;
 const get_weather = require('./functions/get_weather').get_weather;
-const define = require('./functions/define.js');
+const define = require('./functions/define2.js');
 const remind = require('./functions/remind').remind;
 const roll = require('./functions/roll').roll;
 
@@ -27,8 +27,8 @@ bot.onText(/\/weather/, (msg) =>
 
 bot.onText(/\/def (.+)/, (msg, match) => {
 
-define.translate(match[1],'ru|eng', define.editWiki, bot, msg);
-
+//define.translate(match[1],'ru|eng', define.editWiki, bot, msg);
+define.editWiki(match[1],bot,msg);
 });
 
 bot.onText(/\/remind (.+)/, (msg, match) => {
@@ -46,14 +46,8 @@ bot.on('callback_query', (query) => {
 	const action = query.data;
 	const msg = query.message;
 	bot.deleteMessage(msg.chat.id, msg.message_id);
-	if(!isNaN(action))
-	{
-	  define.createPoll(action, bot , msg.chat.id);
-	}
-	else
-	{
-	define.editWiki(action,bot,msg);
-	}
+	define.sendText(action,bot,msg);
+
 });
 
 
