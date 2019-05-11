@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const pg = require('pg');
 const ogs = require('open-graph-scraper');
 const axios = require('axios');
 const fs = require('fs');
