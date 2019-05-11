@@ -5,6 +5,7 @@ const client = new Client ({
 	ssl: true,
 });
 
+
 client.connect();
 
 function makeQuery(word_)
@@ -16,9 +17,26 @@ let query = 'INSERT INTO words (word)' + '\n'
 	  + 'DO UPDATE set counter = EXCLUDED.counter + words.counter';
 client.query(query, (err,res) => {
 	if(err) throw err;
+	console.log('Query succesfull, word ' + word_ + 'added.');
 });
 }
 
+function getData(callback) {
+	let query = 'SELECT * from words'   + '\n'
+		  + 'ORDER BY COUNTER DESC' + '\n'
+		  + 'LIMIT 10';
+client.query(query, (err,res) => {
+	if(err) throw err;
+	let text = 'Топ-10 используемых слов: \n';
+	res.rows.forEach( (el) => {
+	text += el.word + ' - ' + el.counter + '\n';
+});
+	return callback(text);
+});
+}
+
+
 module.exports = {
-	makeQuery: makeQuery
+	makeQuery: makeQuery,
+	getData: getData
 };

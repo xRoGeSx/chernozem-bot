@@ -9,15 +9,40 @@ const get_weather = require('./functions/get_weather').get_weather;
 const define = require('./functions/define2.js');
 const remind = require('./functions/remind').remind;
 const roll = require('./functions/roll').roll;
-
+const psql = require('./functions/word_stats');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, {polling: true});
 
 
+bot.on('message', (msg) => {
+	if(!msg.text)
+	return;
+	let text = msg.text;
+	text = text.split(' ');
+	text.forEach( (word, index) => {
+	text[index] = word.toLowerCase();
+	text[index] = text[index].split(',')[0];
+	text[index] = text[index].split('.')[0];
+	text[index] = text[index].split(';')[0];
+	text[index] = text[index].split('/')[0];
+	})
+	text = text.filter( word => word.length >= 2 );
+	const delay = 2000;
+	let make_query = setInterval( ()=>{psql.makeQuery(text.shift())}, delay);
+	setTimeout(() => {
+	clearInterval(make_query)},
+	(delay + 50) * text.length );
+});
+
 bot.onText(/\/echo (.+)/, (msg, match) =>
 {
-	echo(bot,msg,match[1]);
+ 	echo(bot,msg,match[1]);
+});
+
+bot.onText(/\/top/, (msg) => {
+	console.log('yes');
+	psql.getData( (res) => bot.sendMessage(msg.chat.id, res))
 });
 
 bot.onText(/\/weather/, (msg) =>
