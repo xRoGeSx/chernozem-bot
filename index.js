@@ -17,23 +17,7 @@ const bot = new TelegramBot(token, {polling: true});
 
 
 bot.on('message', (msg) => {
-	if(!msg.text)
-	return;
-	let text = msg.text;
-	text = text.split(' ');
-	text.forEach( (word, index) => {
-	text[index] = word.toLowerCase();
-	text[index] = text[index].split(',')[0];
-	text[index] = text[index].split('.')[0];
-	text[index] = text[index].split(';')[0];
-	text[index] = text[index].split('/')[0];
-	})
-	text = text.filter( word => word.length >= 2 );
-	const delay = 2000;
-	let make_query = setInterval( ()=>{psql.makeQuery(text.shift())}, delay);
-	setTimeout(() => {
-	clearInterval(make_query)},
-	(delay + 50) * text.length );
+	psql.add_word(msg);
 });
 
 bot.onText(/\/echo (.+)/, (msg, match) =>
@@ -41,9 +25,14 @@ bot.onText(/\/echo (.+)/, (msg, match) =>
  	echo(bot,msg,match[1]);
 });
 
-bot.onText(/\/top/, (msg) => {
+bot.onText(/\/topall/, (msg) => {
 	console.log('yes');
-	psql.getData( (res) => bot.sendMessage(msg.chat.id, res))
+	psql.getData(msg, (res) => bot.sendMessage(msg.chat.id, res))
+});
+
+
+bot.onText(/\/topme/, (msg) => {
+	psql.topPerson(msg, (res) => bot.sendMessage(msg.chat.id,res));
 });
 
 bot.onText(/\/weather/, (msg) =>
