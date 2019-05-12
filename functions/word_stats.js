@@ -88,6 +88,8 @@ function add_word (msg) {
 //	console.log('msg sent from user: ' + msg.from.id);
 	if(!msg.text)
 	return;
+	if(msg.from.is_bot)
+	return;
 	handle_table(msg);
 	let text = msg.text;
 	text = text.split(' ');
