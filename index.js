@@ -25,6 +25,19 @@ bot.onText(/\/echo (.+)/, (msg, match) =>
  	echo(bot,msg,match[1]);
 });
 
+bot.onText(/\/filter (.+)/, (msg, match) =>
+{
+	let split = match[1].split(' ');
+	let key = split[0];
+	let word = split[1];
+	if(split.length < 2)
+	return;
+	if(key != '123')
+	return;
+ 	//echo(bot,msg,word);
+	psql.UpdateFilter(word);
+})
+
 bot.onText(/\/topall/, (msg) => {
 	console.log('yes');
 	psql.getData(msg, (res) => bot.sendMessage(msg.chat.id, res))

@@ -8,6 +8,15 @@ const client = new Client ({
 
 client.connect();
 
+let filter;
+function initFilter() {
+	console.log('Filter initializing');
+	client.query('SELECT * from word_filter', (err,res) => {
+	if(err) throw err;
+	filter = res.rows;
+});
+}
+
 function topPerson(msg,callback) {
 	let unique_id = msg.from.id + msg.chat.id;
 	if(unique_id<1)
@@ -59,7 +68,6 @@ client.query(query, (err,res) => {
 	u_id[index] = 'id_'+row.pk_unique_id;
 	console.log(u_id[index]);
 	});
- 
 	query = 'SELECT word,sum(counter) FROM ( \n'
 	u_id.forEach( (string,index) => {
 	if(index != u_id.length-1)
@@ -83,9 +91,11 @@ client.query(query, (err,res) => {
 
 }
 
+
 function add_word (msg) {
 //	console.log('msg sent from chat: ' + msg.chat.id);
 //	console.log('msg sent from user: ' + msg.from.id);
+	let ignored;
 	if(!msg.text)
 	return;
 	if(msg.from.is_bot)
@@ -93,21 +103,40 @@ function add_word (msg) {
 	handle_table(msg);
 	let text = msg.text;
 	text = text.split(' ');
+	let ready = [];
+	if(!filter)
+	initFilter();
+setTimeout( ()=> {
 	text.forEach( (word, index) => {
+	ignored=0;
 	text[index] = word.toLowerCase();
 	text[index] = text[index].split(',')[0];
 	text[index] = text[index].split('.')[0];
 	text[index] = text[index].split(';')[0];
+	text[index] = text[index].split('\\')[0];
 	text[index] = text[index].split('/')[0];
 	text[index] = text[index].split(')')[0];
 	text[index] = text[index].split('(')[0];
+	text[index] = text[index].split(':')[0];
+	text[index] = text[index].split('https')[0];
+	filter.forEach( (template) => {
+	console.log('Word: ' + text[index] + ' \n' + 'Template: ' + template.word);
+	if(text[index]==template.word) {
+	ignored = 1;
+	console.log('Word ' + word + ' is filtered out');
+	}
+	});
+	if(ignored)
+	return;
+	ready.push(text[index]);
 	})
-	text = text.filter( word => word.length >= 3 );
+	text = ready.filter( word => word.length >= 3 );
 	const delay = 2000;
 	let make_query = setInterval( ()=>{makeQuery(text.shift(),msg)}, delay);
 	setTimeout(() => {
 	clearInterval(make_query)},
 	(delay + 50) * text.length );
+}, 1000);
 };
 
 function handle_table(msg) {
@@ -142,10 +171,48 @@ let chat_id = msg.chat.id;
 });
 };
 
+function UpdateFilter(word) {
+ 	console.log('Its called');
+	let query = 'INSERT INTO word_filter (word)' + '\n'
+		  + 'VALUES (\'' + word + '\') ON CONFLICT DO NOTHING';
+	console.log(query);
+	client.query(query, (err,res) => {
+	if(err) throw err;
+});
+	let q_res = [];
+	query = 'SELECT pk_unique_id FROM user_list';
+ 	console.log(query);
+	client.query(query, (err,res) => {
+	if(err) throw err;
+	let result = res.rows;
+	for(let row of result) {
+	let id = row.pk_unique_id;
+	if( id < 0)
+	id *= -1;
+	q_res.push('id_' + id);
+	}
+	console.log(q_res);
+})
+setTimeout( () => {
+	let timeout = q_res.length * 2000;
+	let interval = setInterval( ()=> {
+	let table_id = q_res.shift();
+	query = 'DELETE FROM ' + table_id + '\n'
+	      + 'USING word_filter' + '\n'
+	      + 'WHERE ' + table_id + '.word = ANY( SELECT word FROM word_filter )';
+	client.query(query, (err, res) => {
+	if(err) throw err;
+	})
+}, 2000)
+	setTimeout(() => clearInterval(interval), timeout+1000);
+}, 5000);
+}
+
 
 module.exports = {
 	makeQuery: makeQuery,
 	getData: getData,
 	add_word: add_word,
-	topPerson: topPerson
+	topPerson: topPerson,
+	UpdateFilter: UpdateFilter
 };
